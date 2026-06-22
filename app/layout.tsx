@@ -1,8 +1,9 @@
 import type { Metadata } from 'next'
 import './globals.css'
+import AuthProvider from './components/SessionProvider'
+import { BasketProvider } from './components/BasketContext'
 import Header from './components/Header'
 import Footer from './components/Footer'
-import AuthProvider from './components/SessionProvider'
 
 export const metadata: Metadata = {
   title: 'Tradefix – Tools & Hardware',
@@ -18,9 +19,11 @@ export default function RootLayout({
     <html lang="en">
       <body>
         <AuthProvider>
-          <Header />
-          {children}
-          <Footer />
+          <BasketProvider>
+            <Header />
+            {children}
+            <Footer />
+          </BasketProvider>
         </AuthProvider>
       </body>
     </html>
