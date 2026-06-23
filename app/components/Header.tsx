@@ -42,15 +42,20 @@ export default function Header() {
             📍<br/>Find a Store
           </a>
           {session ? (
-            <button onClick={() => signOut()}
-              style={{background:'none', border:'1px solid white', color:'white', padding:'6px 14px', borderRadius:'4px', cursor:'pointer', fontSize:'13px', fontWeight:'bold'}}>
-              Sign Out
-            </button>
-          ) : (
-            <Link href="/login" style={{color:'white', textDecoration:'none', fontSize:'13px', textAlign:'center'}}>
-              👤<br/>Sign In
-            </Link>
-          )}
+  <div style={{display:'flex', gap:'10px', alignItems:'center'}}>
+    <Link href="/account" style={{color:'white', textDecoration:'none', fontSize:'13px', textAlign:'center'}}>
+      👤<br/>{session.user?.name}
+    </Link>
+    <button onClick={() => signOut()}
+      style={{background:'none', border:'1px solid white', color:'white', padding:'6px 14px', borderRadius:'4px', cursor:'pointer', fontSize:'13px', fontWeight:'bold'}}>
+      Sign Out
+    </button>
+  </div>
+) : (
+  <Link href="/login" style={{color:'white', textDecoration:'none', fontSize:'13px', textAlign:'center'}}>
+    👤<br/>Sign In
+  </Link>
+)}
           <Link href="/basket" style={{background:'#ffe000', color:'#222', padding:'8px 16px', borderRadius:'4px', fontWeight:'bold', textDecoration:'none', position:'relative'}}>
             🛒 Basket ({itemCount})
           </Link>
