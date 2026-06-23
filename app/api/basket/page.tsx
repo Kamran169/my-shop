@@ -1,5 +1,5 @@
 'use client'
-import { useBasket } from '../components/BasketContext'
+import { useBasket } from '../../components/BasketContext'
 import { useSession } from 'next-auth/react'
 import Link from 'next/link'
 
