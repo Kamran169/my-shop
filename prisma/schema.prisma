@@ -8,18 +8,48 @@ datasource db {
   directUrl = env("DIRECT_URL")
 }
 
+enum UserRole {
+  CUSTOMER
+  ADMIN
+}
+
+enum OrderStatus {
+  PENDING
+  PAID
+  SHIPPED
+  DELIVERED
+  CANCELLED
+}
+
+model Category {
+  id        Int       @id @default(autoincrement())
+  name      String    @unique
+  slug      String    @unique
+  createdAt DateTime  @default(now())
+
+  products  Product[]
+}
+
 model Product {
   id          Int      @id @default(autoincrement())
   name        String
+  slug        String   @unique
   code        String   @unique
-  category    String
-  price       Float
-  wasPrice    Float?
+
+  categoryId  Int
+  category    Category @relation(fields: [categoryId], references: [id])
+
+  price       Decimal  @db.Decimal(10,2)
+  wasPrice    Decimal? @db.Decimal(10,2)
+
   stock       Int      @default(0)
-  icon        String
-  badge       String?
-  description String?
+
+  image        String
+  badge        String?
+  description  String?
+
   active      Boolean  @default(true)
+
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
@@ -28,51 +58,71 @@ model Product {
 }
 
 model User {
-  id        Int      @id @default(autoincrement())
-  email     String   @unique
-  name      String
-  password  String
-  phone     String?
-  type      String   @default("personal")
-  createdAt DateTime @default(now())
+  id              Int      @id @default(autoincrement())
+  name            String
+  email           String   @unique
+  password        String
 
-  orders      Order[]
-  basketItems BasketItem[]
+  phone           String?
+  image           String?
+
+  role            UserRole @default(CUSTOMER)
+
+  createdAt       DateTime @default(now())
+
+  orders          Order[]
+  basketItems     BasketItem[]
 }
 
 model Order {
-  id        Int      @id @default(autoincrement())
-  userId    Int?
-  user      User?    @relation(fields: [userId], references: [id])
-  status    String   @default("processing")
-  total     Float
-  delivery  String   @default("standard")
-  address   String
-  city      String
-  postcode  String
-  createdAt DateTime @default(now())
+  id          Int      @id @default(autoincrement())
 
-  items OrderItem[]
+  userId      Int?
+  user        User?    @relation(fields: [userId], references: [id])
+
+  status      OrderStatus @default(PENDING)
+
+  total       Decimal @db.Decimal(10,2)
+
+  firstName   String
+  lastName    String
+  address1    String
+  address2    String?
+  city        String
+  postcode    String
+  country     String
+
+  createdAt   DateTime @default(now())
+
+  items        OrderItem[]
 }
 
 model OrderItem {
-  id        Int     @id @default(autoincrement())
-  orderId   Int
-  order     Order   @relation(fields: [orderId], references: [id])
-  productId Int
-  product   Product @relation(fields: [productId], references: [id])
-  quantity  Int
-  price     Float
+  id          Int      @id @default(autoincrement())
+
+  orderId     Int
+  order       Order    @relation(fields: [orderId], references: [id])
+
+  productId   Int
+  product     Product  @relation(fields: [productId], references: [id])
+
+  quantity    Int
+
+  price       Decimal @db.Decimal(10,2)
 }
 
 model BasketItem {
-  id        Int      @id @default(autoincrement())
-  userId    Int
-  user      User     @relation(fields: [userId], references: [id])
-  productId Int
-  product   Product  @relation(fields: [productId], references: [id])
-  quantity  Int      @default(1)
-  createdAt DateTime @default(now())
+  id          Int      @id @default(autoincrement())
+
+  userId      Int
+  user        User     @relation(fields: [userId], references: [id])
+
+  productId   Int
+  product     Product  @relation(fields: [productId], references: [id])
+
+  quantity    Int      @default(1)
+
+  createdAt   DateTime @default(now())
 
   @@unique([userId, productId])
 }

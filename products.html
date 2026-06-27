@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Tradefix – Products</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: Arial, sans-serif; background: #f4f4f4; color: #222; }
+
+    /* TOP BAR */
+    .top-bar {
+      background: #cc0000; color: white; font-size: 13px;
+      padding: 6px 20px; display: flex; justify-content: flex-end; gap: 20px;
+    }
+    .top-bar a { color: white; text-decoration: none; }
+
+    /* HEADER */
+    header {
+      background: #cc0000; padding: 10px 20px;
+      display: flex; align-items: center; gap: 16px; flex-wrap: wrap;
+    }
+    .logo { font-size: 26px; font-weight: 900; color: white; text-decoration: none; }
+    .logo span { color: #ffe000; }
+    .search-bar { flex: 1; display: flex; min-width: 200px; }
+    .search-bar input {
+      flex: 1; padding: 10px 14px; border: none;
+      font-size: 15px; border-radius: 4px 0 0 4px; outline: none;
+    }
+    .search-bar button {
+      background: #ffe000; border: none; padding: 10px 18px;
+      font-weight: bold; cursor: pointer; border-radius: 0 4px 4px 0;
+    }
+    .header-actions { display: flex; gap: 18px; align-items: center; }
+    .header-actions a { color: white; text-decoration: none; font-size: 13px; text-align: center; }
+    .basket-btn {
+      background: #ffe000; color: #222 !important;
+      padding: 8px 16px; border-radius: 4px; font-weight: bold;
+    }
+
+    /* NAV */
+    nav { background: #222; display: flex; overflow-x: auto; scrollbar-width: none; }
+    nav a {
+      color: #fff; text-decoration: none; padding: 12px 16px;
+      font-size: 13px; white-space: nowrap;
+    }
+    nav a:hover { background: #cc0000; }
+
+    /* BREADCRUMB */
+    .breadcrumb {
+      background: white; padding: 10px 20px;
+      font-size: 13px; border-bottom: 1px solid #ddd;
+    }
+    .breadcrumb a { color: #cc0000; text-decoration: none; }
+    .breadcrumb a:hover { text-decoration: underline; }
+
+    /* MAIN LAYOUT */
+    .main-layout {
+      display: flex; gap: 20px;
+      max-width: 1200px; margin: 20px auto; padding: 0 20px;
+    }
+
+    /* SIDEBAR FILTERS */
+    .sidebar { width: 220px; flex-shrink: 0; }
+    .filter-box {
+      background: white; border: 1px solid #ddd;
+      border-radius: 6px; margin-bottom: 16px; overflow: hidden;
+    }
+    .filter-title {
+      background: #222; color: white; padding: 10px 14px;
+      font-size: 14px; font-weight: bold;
+    }
+    .filter-body { padding: 12px 14px; }
+    .filter-body label {
+      display: flex; align-items: center; gap: 8px;
+      font-size: 13px; margin-bottom: 10px; cursor: pointer;
+    }
+    .filter-body input[type="checkbox"] { accent-color: #cc0000; width: 15px; height: 15px; }
+    .filter-body .count { color: #888; font-size: 12px; margin-left: auto; }
+
+    .price-inputs { display: flex; gap: 8px; align-items: center; margin-top: 8px; }
+    .price-inputs input {
+      width: 80px; padding: 6px 8px; border: 1px solid #ddd;
+      border-radius: 4px; font-size: 13px;
+    }
+    .apply-btn {
+      background: #cc0000; color: white; border: none;
+      padding: 7px 14px; border-radius: 4px; cursor: pointer;
+      font-size: 13px; margin-top: 8px; width: 100%;
+    }
+
+    /* PRODUCTS AREA */
+    .products-area { flex: 1; }
+
+    .toolbar {
+      background: white; border: 1px solid #ddd; border-radius: 6px;
+      padding: 12px 16px; display: flex; align-items: center;
+      justify-content: space-between; margin-bottom: 16px; flex-wrap: wrap; gap: 10px;
+    }
+    .toolbar .results { font-size: 14px; color: #555; }
+    .toolbar .results strong { color: #222; }
+    .sort-select {
+      padding: 8px 12px; border: 1px solid #ddd; border-radius: 4px;
+      font-size: 14px; cursor: pointer;
+    }
+    .view-btns { display: flex; gap: 6px; }
+    .view-btn {
+      background: #f4f4f4; border: 1px solid #ddd; padding: 6px 10px;
+      border-radius: 4px; cursor: pointer; font-size: 16px;
+    }
+    .view-btn.active { background: #cc0000; color: white; border-color: #cc0000; }
+
+    /* PRODUCT GRID */
+    .products-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 16px;
+    }
+    .product-card {
+      background: white; border: 1px solid #ddd; border-radius: 6px;
+      padding: 16px; display: flex; flex-direction: column; gap: 8px;
+      transition: all 0.2s; position: relative;
+    }
+    .product-card:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.1); border-color: #aaa; }
+
+    .badge-new {
+      position: absolute; top: 10px; left: 10px;
+      background: #007700; color: white; font-size: 10px;
+      font-weight: bold; padding: 2px 7px; border-radius: 3px;
+    }
+    .badge-sale {
+      position: absolute; top: 10px; left: 10px;
+      background: #cc0000; color: white; font-size: 10px;
+      font-weight: bold; padding: 2px 7px; border-radius: 3px;
+    }
+
+    .product-img {
+      width: 100%; height: 140px; background: #f0f0f0;
+      border-radius: 4px; display: flex; align-items: center;
+      justify-content: center; font-size: 50px;
+    }
+    .product-name { font-size: 13px; font-weight: bold; line-height: 1.4; }
+    .product-code { font-size: 11px; color: #888; }
+
+    .stars { color: #ffe000; font-size: 13px; }
+    .stars span { color: #888; font-size: 12px; }
+
+    .was-price { font-size: 12px; color: #888; text-decoration: line-through; }
+    .product-price { font-size: 22px; font-weight: 900; color: #cc0000; }
+    .product-vat { font-size: 11px; color: #888; }
+    .save-badge {
+      background: #cc0000; color: white; font-size: 11px;
+      font-weight: bold; padding: 2px 8px; border-radius: 3px; display: inline-block;
+    }
+
+    .stock-in { color: #007700; font-size: 12px; font-weight: bold; }
+    .stock-low { color: #ff6600; font-size: 12px; font-weight: bold; }
+
+    .add-btn {
+      background: #ffe000; border: none; padding: 10px;
+      font-weight: bold; font-size: 14px; border-radius: 4px;
+      cursor: pointer; margin-top: auto;
+    }
+    .add-btn:hover { background: #e6cc00; }
+
+    /* PAGINATION */
+    .pagination {
+      display: flex; justify-content: center; gap: 8px;
+      margin-top: 30px; flex-wrap: wrap;
+    }
+    .page-btn {
+      padding: 8px 14px; border: 1px solid #ddd; background: white;
+      border-radius: 4px; cursor: pointer; font-size: 14px;
+    }
+    .page-btn:hover { border-color: #cc0000; color: #cc0000; }
+    .page-btn.active { background: #cc0000; color: white; border-color: #cc0000; }
+
+    /* FOOTER */
+    footer { background: #222; color: #ccc; margin-top: 40px; }
+    .footer-bottom {
+      background: #111; text-align: center;
+      padding: 14px; font-size: 12px; color: #666;
+    }
+
+    @media (max-width: 700px) {
+      .sidebar { display: none; }
+      .main-layout { padding: 0 10px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<div class="top-bar">
+  <a href="index.html#help">Need Help?</a>
+  <a href="login.html">Sign In / Register</a>
+  <a href="index.html#track">Track My Order</a>
+</div>
+
+<!-- HEADER -->
+<header>
+  <a class="logo" href="index.html">Trade<span>fix</span></a>
+  <div class="search-bar">
+    <input type="text" placeholder="Search over 30,000 products..." />
+    <button>🔍 Search</button>
+  </div>
+  <div class="header-actions">
+    <a href="index.html#stores">📍 Find a Store</a>
+    <a href="login.html">👤 Sign In</a>
+    <a href="basket.html" class="basket-btn">🛒 Basket (0)</a>
+  </div>
+</header>
+
+<!-- NAV -->
+<nav>
+  <a href="products.html">🔧 Tools</a>
+  <a href="products.html">🔌 Electrical</a>
+  <a href="products.html">🚿 Plumbing</a>
+  <a href="products.html">🪟 Bathrooms</a>
+  <a href="products.html">🌿 Outdoor</a>
+  <a href="products.html">🔩 Screws & Fixings</a>
+  <a href="products.html">🔐 Security</a>
+  <a href="products.html">🏗️ Building</a>
+  <a href="products.html">🦺 Safety & Workwear</a>
+  <a href="products.html">🎨 Painting</a>
+  <a href="products.html">🪜 Ladders</a>
+  <a href="products.html">🚗 Auto & Cleaning</a>
+</nav>
+
+<!-- BREADCRUMB -->
+<div class="breadcrumb">
+  <a href="index.html">Home</a> › <a href="products.html">Tools</a> › Power Tools
+</div>
+
+<!-- MAIN -->
+<div class="main-layout">
+
+  <!-- SIDEBAR -->
+  <div class="sidebar">
+
+    <div class="filter-box">
+      <div class="filter-title">📂 Category</div>
+      <div class="filter-body">
+        <label><input type="checkbox" checked> All Tools <span class="count">245</span></label>
+        <label><input type="checkbox"> Power Tools <span class="count">86</span></label>
+        <label><input type="checkbox"> Hand Tools <span class="count">74</span></label>
+        <label><input type="checkbox"> Tool Storage <span class="count">45</span></label>
+        <label><input type="checkbox"> Measuring Tools <span class="count">40</span></label>
+      </div>
+    </div>
+
+    <div class="filter-box">
+      <div class="filter-title">💷 Price Range</div>
+      <div class="filter-body">
+        <label><input type="checkbox"> Under £10 <span class="count">32</span></label>
+        <label><input type="checkbox"> £10 – £25 <span class="count">58</span></label>
+        <label><input type="checkbox"> £25 – £50 <span class="count">71</span></label>
+        <label><input type="checkbox"> £50 – £100 <span class="count">49</span></label>
+        <label><input type="checkbox"> Over £100 <span class="count">35</span></label>
+        <div class="price-inputs">
+          <input type="number" placeholder="Min" />
+          <span>–</span>
+          <input type="number" placeholder="Max" />
+        </div>
+        <button class="apply-btn">Apply</button>
+      </div>
+    </div>
+
+    <div class="filter-box">
+      <div class="filter-title">🏷️ Brand</div>
+      <div class="filter-body">
+        <label><input type="checkbox"> DeWalt <span class="count">28</span></label>
+        <label><input type="checkbox"> Makita <span class="count">24</span></label>
+        <label><input type="checkbox"> Bosch <span class="count">31</span></label>
+        <label><input type="checkbox"> Stanley <span class="count">19</span></label>
+        <label><input type="checkbox"> Milwaukee <span class="count">22</span></label>
+      </div>
+    </div>
+
+    <div class="filter-box">
+      <div class="filter-title">⭐ Rating</div>
+      <div class="filter-body">
+        <label><input type="checkbox"> ⭐⭐⭐⭐⭐ 5 star</label>
+        <label><input type="checkbox"> ⭐⭐⭐⭐ 4 star & up</label>
+        <label><input type="checkbox"> ⭐⭐⭐ 3 star & up</label>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- PRODUCTS AREA -->
+  <div class="products-area">
+
+    <!-- TOOLBAR -->
+    <div class="toolbar">
+      <div class="results">Showing <strong>1–12</strong> of <strong>245</strong> products</div>
+      <div style="display:flex; gap:12px; align-items:center; flex-wrap:wrap;">
+        <select class="sort-select">
+          <option>Sort: Best Sellers</option>
+          <option>Price: Low to High</option>
+          <option>Price: High to Low</option>
+          <option>Highest Rated</option>
+          <option>Newest First</option>
+        </select>
+        <div class="view-btns">
+          <button class="view-btn active">⊞</button>
+          <button class="view-btn">☰</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- PRODUCT GRID -->
+    <div class="products-grid">
+
+      <div class="product-card">
+        <span class="badge-sale">SALE</span>
+        <div class="product-img">⚡</div>
+        <div class="product-name">18V Cordless Drill Driver with 2 Batteries</div>
+        <div class="product-code">Code: 34567</div>
+        <div class="stars">★★★★★ <span>(142 reviews)</span></div>
+        <div class="was-price">Was £89.99</div>
+        <div><span class="save-badge">SAVE £20</span></div>
+        <div class="product-price">£69.99</div>
+        <div class="product-vat">Inc. VAT</div>
+        <div class="stock-in">✅ In Stock</div>
+        <button class="add-btn">🛒 Add to Basket</button>
+      </div>
+
+      <div class="product-card">
+        <span class="badge-new">NEW</span>
+        <div class="product-img">🔨</div>
+        <div class="product-name">Heavy Duty Claw Hammer 16oz Fibreglass Handle</div>
+        <div class="product-code">Code: 12345</div>
+        <div class="stars">★★★★☆ <span>(89 reviews)</span></div>
+        <div class="product-price">£12.99</div>
+        <div class="product-vat">Inc. VAT</div>
+        <div class="stock-in">✅ In Stock</div>
+        <button class="add-btn">🛒 Add to Basket</button>
+      </div>
+
+      <div class="product-card">
+        <div class="product-img">🪚</div>
+        <div class="product-name">Circular Saw 185mm 1200W with Laser Guide</div>
+        <div class="product-code">Code: 56789</div>
+        <div class="stars">★★★★★ <span>(203 reviews)</span></div>
+        <div class="was-price">Was £79.99</div>
+        <div><span class="save-badge">SAVE £15</span></div>
+        <div class="product-price">£64.99</div>
+        <div class="product-vat">Inc. VAT</div>
+        <div class="stock-low">⚠️ Only 5 left!</div>
+        <button class="add-btn">🛒 Add to Basket</button>
+      </div>
+
+      <div class="product-card">
+        <div class="product-img">📏</div>
+        <div class="product-name">Digital Laser Tape Measure 40m Range</div>
+        <div class="product-code">Code: 67890</div>
+        <div class="stars">★★★★☆ <span>(56 reviews)</span></div>
+        <div class="product-price">£34.99</div>
+        <div class="product-vat">Inc. VAT</div>
+        <div class="stock-in">✅ In Stock</div>
+        <button class="add-btn">🛒 Add to Basket</button>
+      </div>
+
+      <div class="product-card">
+        <span class="badge-sale">SALE</span>
+        <div class="product-img">🔧</div>
+        <div class="product-name">Combination Spanner Set 8–19mm 8 Piece</div>
+        <div class="product-code">Code: 78901</div>
+        <div class="stars">★★★★★ <span>(178 reviews)</span></div>
+        <div class="was-price">Was £22.99</div>
+        <div><span class="save-badge">SAVE £8</span></div>
+        <div class="product-price">£14.99</div>
+        <div class="product-vat">Inc. VAT</div>
+        <div class="stock-in">✅ In Stock</div>
+        <button class="add-btn">🛒 Add to Basket</button>
+      </div>
+
+      <div class="product-card">
+        <div class="product-img">🪛</div>
+        <div class="product-name">Screwdriver Set 10 Piece Magnetic Tips</div>
+        <div class="product-code">Code: 89012</div>
+        <div class="stars">★★★★☆ <span>(94 reviews)</span></div>
+        <div class="product-price">£9.99</div>
+        <div class="product-vat">Inc. VAT</div>
+        <div class="stock-in">✅ In Stock</div>
+        <button class="add-btn">🛒 Add to Basket</button>
+      </div>
+
+      <div class="product-card">
+        <span class="badge-new">NEW</span>
+        <div class="product-img">🔋</div>
+        <div class="product-name">18V Li-Ion Battery 5.0Ah Fast Charge</div>
+        <div class="product-code">Code: 90123</div>
+        <div class="stars">★★★★★ <span>(67 reviews)</span></div>
+        <div class="product-price">£44.99</div>
+        <div class="product-vat">Inc. VAT</div>
+        <div class="stock-in">✅ In Stock</div>
+        <button class="add-btn">🛒 Add to Basket</button>
+      </div>
+
+      <div class="product-card">
+        <div class="product-img">🪜</div>
+        <div class="product-name">Aluminium Step Ladder 3 Tread Non-Slip</div>
+        <div class="product-code">Code: 01234</div>
+        <div class="stars">★★★★☆ <span>(112 reviews)</span></div>
+        <div class="was-price">Was £39.99</div>
+        <div><span class="save-badge">SAVE £10</span></div>
+        <div class="product-price">£29.99</div>
+        <div class="product-vat">Inc. VAT</div>
+        <div class="stock-low">⚠️ Only 3 left!</div>
+        <button class="add-btn">🛒 Add to Basket</button>
+      </div>
+
+    </div>
+
+    <!-- PAGINATION -->
+    <div class="pagination">
+      <button class="page-btn active">1</button>
+      <button class="page-btn">2</button>
+      <button class="page-btn">3</button>
+      <button class="page-btn">4</button>
+      <button class="page-btn">5</button>
+      <button class="page-btn">Next ›</button>
+    </div>
+
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-bottom">
+    © 2026 Tradefix Ltd. All rights reserved. | Secure payments | VAT No: 123 4567 89
+  </div>
+</footer>
+
+<!-- TOAST -->
+<div id="toast" style="display:none;position:fixed;bottom:24px;right:24px;background:#222;color:white;padding:14px 20px;border-radius:6px;font-size:14px;font-weight:bold;z-index:9999;box-shadow:0 4px 16px rgba(0,0,0,0.3);">
+  ✅ Added to basket!
+</div>
+
+<script>
+  let basketCount = 0;
+
+  function addToBasket(btn) {
+    basketCount++;
+    document.querySelector('.basket-btn').textContent = `🛒 Basket (${basketCount})`;
+    // Flash button
+    btn.textContent = '✅ Added!';
+    btn.style.background = '#007700';
+    btn.style.color = 'white';
+    setTimeout(() => {
+      btn.textContent = '🛒 Add to Basket';
+      btn.style.background = '';
+      btn.style.color = '';
+    }, 1200);
+    // Show toast
+    const toast = document.getElementById('toast');
+    toast.style.display = 'block';
+    clearTimeout(window._toastTimer);
+    window._toastTimer = setTimeout(() => { toast.style.display = 'none'; }, 2000);
+  }
+
+  // Wire up all add buttons
+  document.querySelectorAll('.add-btn').forEach(btn => {
+    btn.addEventListener('click', () => addToBasket(btn));
+  });
+
+  // View toggle
+  document.querySelectorAll('.view-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.view-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+    });
+  });
+
+  // Pagination
+  document.querySelectorAll('.page-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.page-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+    });
+  });
+</script>
+
+</body>
+</html>

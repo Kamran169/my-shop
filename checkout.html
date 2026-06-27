@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Tradefix – Checkout</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: Arial, sans-serif; background: #f4f4f4; color: #222; }
+
+    .top-bar {
+      background: #cc0000; color: white; font-size: 13px;
+      padding: 6px 20px; display: flex; justify-content: flex-end; gap: 20px;
+    }
+    .top-bar a { color: white; text-decoration: none; }
+
+    header {
+      background: #cc0000; padding: 10px 20px;
+      display: flex; align-items: center; gap: 16px; flex-wrap: wrap;
+    }
+    .logo { font-size: 26px; font-weight: 900; color: white; text-decoration: none; }
+    .logo span { color: #ffe000; }
+    .search-bar { flex: 1; display: flex; min-width: 200px; }
+    .search-bar input {
+      flex: 1; padding: 10px 14px; border: none;
+      font-size: 15px; border-radius: 4px 0 0 4px; outline: none;
+    }
+    .search-bar button {
+      background: #ffe000; border: none; padding: 10px 18px;
+      font-weight: bold; cursor: pointer; border-radius: 0 4px 4px 0;
+    }
+    .header-actions { display: flex; gap: 18px; align-items: center; }
+    .header-actions a { color: white; text-decoration: none; font-size: 13px; }
+    .basket-btn {
+      background: #ffe000; color: #222 !important;
+      padding: 8px 16px; border-radius: 4px; font-weight: bold;
+    }
+
+    nav { background: #222; display: flex; overflow-x: auto; scrollbar-width: none; }
+    nav a {
+      color: #fff; text-decoration: none; padding: 12px 16px;
+      font-size: 13px; white-space: nowrap;
+    }
+    nav a:hover { background: #cc0000; }
+
+    /* STEPS BAR */
+    .steps-bar {
+      background: white; border-bottom: 1px solid #ddd;
+      padding: 16px 20px; display: flex; justify-content: center;
+    }
+    .step { display: flex; align-items: center; gap: 8px; font-size: 13px; color: #888; }
+    .step.active { color: #cc0000; font-weight: bold; }
+    .step.done { color: #007700; }
+    .step-num {
+      width: 28px; height: 28px; border-radius: 50%;
+      background: #ddd; color: #888;
+      display: flex; align-items: center; justify-content: center;
+      font-weight: bold; font-size: 13px;
+    }
+    .step.active .step-num { background: #cc0000; color: white; }
+    .step.done .step-num { background: #007700; color: white; }
+    .step-line { width: 60px; height: 2px; background: #ddd; margin: 0 8px; }
+
+    /* MAIN */
+    .main-layout {
+      display: flex; gap: 24px;
+      max-width: 1100px; margin: 24px auto; padding: 0 20px;
+      align-items: flex-start;
+    }
+
+    /* LEFT FORM SECTION */
+    .form-section { flex: 1; display: flex; flex-direction: column; gap: 20px; }
+
+    .form-box {
+      background: white; border: 1px solid #ddd;
+      border-radius: 6px; overflow: hidden;
+    }
+    .form-box-title {
+      background: #222; color: white; padding: 12px 16px;
+      font-size: 15px; font-weight: bold;
+    }
+    .form-box-body { padding: 20px; }
+
+    .form-row { display: flex; gap: 16px; flex-wrap: wrap; }
+    .form-group { display: flex; flex-direction: column; gap: 6px; flex: 1; min-width: 180px; }
+    .form-group label { font-size: 13px; font-weight: bold; color: #444; }
+    .form-group input,
+    .form-group select {
+      padding: 10px 12px; border: 1px solid #ddd;
+      border-radius: 4px; font-size: 14px; outline: none;
+    }
+    .form-group input:focus,
+    .form-group select:focus { border-color: #cc0000; }
+    .form-group.full { flex: 100%; min-width: 100%; }
+
+    /* DELIVERY OPTIONS */
+    .delivery-options { display: flex; flex-direction: column; gap: 10px; }
+    .delivery-option {
+      border: 2px solid #ddd; border-radius: 6px; padding: 14px 16px;
+      display: flex; align-items: center; gap: 14px; cursor: pointer;
+      transition: all 0.2s;
+    }
+    .delivery-option:hover { border-color: #cc0000; }
+    .delivery-option.selected { border-color: #cc0000; background: #fff5f5; }
+    .delivery-option input[type="radio"] { accent-color: #cc0000; width: 18px; height: 18px; }
+    .delivery-option .opt-info { flex: 1; }
+    .delivery-option .opt-name { font-weight: bold; font-size: 14px; }
+    .delivery-option .opt-desc { font-size: 12px; color: #888; margin-top: 2px; }
+    .delivery-option .opt-price { font-weight: bold; font-size: 15px; color: #cc0000; }
+    .delivery-option .opt-price.free { color: #007700; }
+
+    /* PAYMENT OPTIONS */
+    .payment-tabs { display: flex; gap: 0; margin-bottom: 20px; border: 1px solid #ddd; border-radius: 6px; overflow: hidden; }
+    .pay-tab {
+      flex: 1; padding: 12px; text-align: center; cursor: pointer;
+      font-size: 14px; font-weight: bold; background: #f4f4f4;
+      border: none; border-right: 1px solid #ddd;
+    }
+    .pay-tab:last-child { border-right: none; }
+    .pay-tab.active { background: #cc0000; color: white; }
+
+    .card-form { display: flex; flex-direction: column; gap: 16px; }
+    .card-icons { display: flex; gap: 8px; margin-bottom: 4px; }
+    .card-icon {
+      background: #f0f0f0; border: 1px solid #ddd;
+      border-radius: 4px; padding: 4px 10px; font-size: 13px; font-weight: bold;
+    }
+
+    .card-row { position: relative; }
+    .card-row input { padding-right: 40px; width: 100%; }
+    .card-row .card-hint {
+      position: absolute; right: 12px; top: 50%;
+      transform: translateY(-50%); font-size: 18px; color: #888;
+    }
+
+    /* ORDER SUMMARY */
+    .summary-box {
+      width: 300px; flex-shrink: 0; background: white;
+      border: 1px solid #ddd; border-radius: 6px; overflow: hidden;
+      position: sticky; top: 20px;
+    }
+    .summary-title { background: #222; color: white; padding: 14px 16px; font-size: 15px; font-weight: bold; }
+    .summary-body { padding: 16px; }
+
+    .order-item {
+      display: flex; justify-content: space-between;
+      font-size: 13px; margin-bottom: 10px; gap: 10px;
+    }
+    .order-item .name { color: #444; flex: 1; }
+    .order-item .price { font-weight: bold; white-space: nowrap; }
+
+    .summary-divider { border: none; border-top: 1px solid #eee; margin: 12px 0; }
+
+    .summary-row {
+      display: flex; justify-content: space-between;
+      font-size: 14px; margin-bottom: 10px;
+    }
+    .summary-row.total {
+      font-size: 18px; font-weight: 900;
+      border-top: 2px solid #ddd; padding-top: 12px; margin-top: 4px;
+    }
+    .summary-row.total .price { color: #cc0000; }
+    .summary-row .label { color: #555; }
+    .summary-row .price { font-weight: bold; }
+
+    .place-order-btn {
+      background: #cc0000; color: white; border: none;
+      width: 100%; padding: 14px; font-size: 16px;
+      font-weight: bold; border-radius: 4px; cursor: pointer;
+      margin-top: 16px; margin-bottom: 10px;
+    }
+    .place-order-btn:hover { background: #aa0000; }
+
+    .secure-notice { text-align: center; font-size: 12px; color: #888; }
+
+    .back-link {
+      color: #cc0000; text-decoration: none; font-size: 13px;
+      display: inline-flex; align-items: center; gap: 6px;
+    }
+    .back-link:hover { text-decoration: underline; }
+
+    /* SUCCESS POPUP */
+    .popup-overlay {
+      display: none; position: fixed; top: 0; left: 0;
+      width: 100%; height: 100%; background: rgba(0,0,0,0.5);
+      z-index: 999; align-items: center; justify-content: center;
+    }
+    .popup-overlay.show { display: flex; }
+    .popup-box {
+      background: white; border-radius: 10px; padding: 40px;
+      text-align: center; max-width: 420px; width: 90%;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+    }
+    .popup-icon { font-size: 60px; margin-bottom: 16px; }
+    .popup-box h2 { font-size: 24px; margin-bottom: 10px; color: #007700; }
+    .popup-box p { color: #555; margin-bottom: 6px; font-size: 14px; }
+    .popup-box .order-num { font-size: 20px; font-weight: 900; color: #cc0000; margin: 12px 0; }
+    .popup-btn {
+      background: #cc0000; color: white; border: none;
+      padding: 12px 28px; border-radius: 4px; font-size: 15px;
+      font-weight: bold; cursor: pointer; margin-top: 16px;
+    }
+
+    footer { background: #222; color: #ccc; margin-top: 40px; }
+    .footer-bottom {
+      background: #111; text-align: center;
+      padding: 14px; font-size: 12px; color: #666;
+    }
+
+    @media (max-width: 750px) {
+      .main-layout { flex-direction: column; }
+      .summary-box { width: 100%; position: static; }
+      .step-line { width: 30px; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="top-bar">
+  <a href="index.html#help">Need Help?</a>
+  <a href="login.html">Sign In / Register</a>
+  <a href="index.html#track">Track My Order</a>
+</div>
+
+<header>
+  <a class="logo" href="index.html">Trade<span>fix</span></a>
+  <div class="search-bar">
+    <input type="text" placeholder="Search over 30,000 products..." />
+    <button>🔍 Search</button>
+  </div>
+  <div class="header-actions">
+    <a href="index.html#stores">📍 Find a Store</a>
+    <a href="login.html">👤 Sign In</a>
+    <a href="basket.html" class="basket-btn">🛒 Basket (3)</a>
+  </div>
+</header>
+
+<nav>
+  <a href="products.html">🔧 Tools</a>
+  <a href="products.html">🔌 Electrical</a>
+  <a href="products.html">🚿 Plumbing</a>
+  <a href="products.html">🪟 Bathrooms</a>
+  <a href="products.html">🌿 Outdoor</a>
+  <a href="products.html">🔩 Screws & Fixings</a>
+  <a href="products.html">🔐 Security</a>
+  <a href="products.html">🏗️ Building</a>
+  <a href="products.html">🦺 Safety & Workwear</a>
+  <a href="products.html">🎨 Painting</a>
+  <a href="products.html">🪜 Ladders</a>
+  <a href="products.html">🚗 Auto & Cleaning</a>
+</nav>
+
+<!-- STEPS -->
+<div class="steps-bar">
+  <div class="step done"><div class="step-num">✓</div> Basket</div>
+  <div class="step-line"></div>
+  <div class="step active"><div class="step-num">2</div> Details &amp; Payment</div>
+  <div class="step-line"></div>
+  <div class="step"><div class="step-num">3</div> Confirm</div>
+</div>
+
+<!-- MAIN -->
+<div class="main-layout">
+
+  <!-- LEFT: FORMS -->
+  <div class="form-section">
+
+    <!-- CONTACT DETAILS -->
+    <div class="form-box">
+      <div class="form-box-title">👤 Your Details</div>
+      <div class="form-box-body">
+        <div class="form-row">
+          <div class="form-group">
+            <label>First Name *</label>
+            <input type="text" placeholder="John" />
+          </div>
+          <div class="form-group">
+            <label>Last Name *</label>
+            <input type="text" placeholder="Smith" />
+          </div>
+        </div>
+        <div class="form-row" style="margin-top:14px;">
+          <div class="form-group">
+            <label>Email Address *</label>
+            <input type="email" placeholder="john@example.com" />
+          </div>
+          <div class="form-group">
+            <label>Phone Number *</label>
+            <input type="tel" placeholder="07700 000000" />
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- DELIVERY ADDRESS -->
+    <div class="form-box">
+      <div class="form-box-title">📦 Delivery Address</div>
+      <div class="form-box-body">
+        <div class="form-row">
+          <div class="form-group full">
+            <label>Address Line 1 *</label>
+            <input type="text" placeholder="123 High Street" />
+          </div>
+        </div>
+        <div class="form-row" style="margin-top:14px;">
+          <div class="form-group full">
+            <label>Address Line 2</label>
+            <input type="text" placeholder="Apartment, suite, etc. (optional)" />
+          </div>
+        </div>
+        <div class="form-row" style="margin-top:14px;">
+          <div class="form-group">
+            <label>Town / City *</label>
+            <input type="text" placeholder="London" />
+          </div>
+          <div class="form-group">
+            <label>Postcode *</label>
+            <input type="text" placeholder="SW1A 1AA" />
+          </div>
+        </div>
+        <div class="form-row" style="margin-top:14px;">
+          <div class="form-group">
+            <label>Country *</label>
+            <select>
+              <option>United Kingdom</option>
+              <option>Ireland</option>
+            </select>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- DELIVERY OPTIONS -->
+    <div class="form-box">
+      <div class="form-box-title">🚚 Delivery Method</div>
+      <div class="form-box-body">
+        <div class="delivery-options">
+          <div class="delivery-option selected" onclick="selectDelivery(this)">
+            <input type="radio" name="delivery" checked />
+            <div class="opt-info">
+              <div class="opt-name">Standard Delivery</div>
+              <div class="opt-desc">3–5 working days</div>
+            </div>
+            <div class="opt-price free">FREE</div>
+          </div>
+          <div class="delivery-option" onclick="selectDelivery(this)">
+            <input type="radio" name="delivery" />
+            <div class="opt-info">
+              <div class="opt-name">Next Day Delivery</div>
+              <div class="opt-desc">Order before 8pm — delivered tomorrow</div>
+            </div>
+            <div class="opt-price">£5.99</div>
+          </div>
+          <div class="delivery-option" onclick="selectDelivery(this)">
+            <input type="radio" name="delivery" />
+            <div class="opt-info">
+              <div class="opt-name">⚡ Sprint — Express Delivery</div>
+              <div class="opt-desc">Delivered in as little as 20 minutes</div>
+            </div>
+            <div class="opt-price">£9.99</div>
+          </div>
+          <div class="delivery-option" onclick="selectDelivery(this)">
+            <input type="radio" name="delivery" />
+            <div class="opt-info">
+              <div class="opt-name">🏪 Click & Collect</div>
+              <div class="opt-desc">Ready in as little as 1 minute at your local store</div>
+            </div>
+            <div class="opt-price free">FREE</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PAYMENT -->
+    <div class="form-box">
+      <div class="form-box-title">💳 Payment</div>
+      <div class="form-box-body">
+
+        <div class="payment-tabs">
+          <button class="pay-tab active" onclick="switchTab(this, 'card-section')">💳 Card</button>
+          <button class="pay-tab" onclick="switchTab(this, 'paypal-section')">🅿 PayPal</button>
+          <button class="pay-tab" onclick="switchTab(this, 'account-section')">🏢 Trade Account</button>
+        </div>
+
+        <!-- CARD -->
+        <div id="card-section" class="card-form">
+          <div class="card-icons">
+            <span class="card-icon">VISA</span>
+            <span class="card-icon">MC</span>
+            <span class="card-icon">AMEX</span>
+          </div>
+          <div class="form-group">
+            <label>Name on Card *</label>
+            <input type="text" placeholder="John Smith" />
+          </div>
+          <div class="form-group card-row">
+            <label>Card Number *</label>
+            <input type="text" placeholder="1234 5678 9012 3456" maxlength="19" />
+            <span class="card-hint">💳</span>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Expiry Date *</label>
+              <input type="text" placeholder="MM / YY" maxlength="7" />
+            </div>
+            <div class="form-group">
+              <label>CVV *</label>
+              <input type="text" placeholder="123" maxlength="4" />
+            </div>
+          </div>
+        </div>
+
+        <!-- PAYPAL -->
+        <div id="paypal-section" style="display:none; text-align:center; padding: 20px 0;">
+          <p style="margin-bottom:16px; color:#555;">You will be redirected to PayPal to complete your payment securely.</p>
+          <button style="background:#ffc439; color:#003087; border:none; padding:14px 40px; font-size:16px; font-weight:bold; border-radius:6px; cursor:pointer;">
+            Continue with 🅿 PayPal
+          </button>
+        </div>
+
+        <!-- TRADE ACCOUNT -->
+        <div id="account-section" style="display:none; padding: 10px 0;">
+          <div class="form-group" style="margin-bottom:14px;">
+            <label>Trade Account Number *</label>
+            <input type="text" placeholder="e.g. TF-123456" />
+          </div>
+          <div class="form-group">
+            <label>Account PIN *</label>
+            <input type="password" placeholder="Enter your PIN" />
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <a class="back-link" href="basket.html">← Back to Basket</a>
+
+  </div>
+
+  <!-- RIGHT: ORDER SUMMARY -->
+  <div class="summary-box">
+    <div class="summary-title">📋 Your Order</div>
+    <div class="summary-body">
+
+      <div class="order-item">
+        <span class="name">18V Cordless Drill x1</span>
+        <span class="price">£69.99</span>
+      </div>
+      <div class="order-item">
+        <span class="name">Claw Hammer 16oz x2</span>
+        <span class="price">£25.98</span>
+      </div>
+      <div class="order-item">
+        <span class="name">Screws Trade Pack x1</span>
+        <span class="price">£14.99</span>
+      </div>
+
+      <hr class="summary-divider" />
+
+      <div class="summary-row">
+        <span class="label">Subtotal (ex. VAT)</span>
+        <span class="price">£92.47</span>
+      </div>
+      <div class="summary-row">
+        <span class="label">VAT (20%)</span>
+        <span class="price">£18.49</span>
+      </div>
+      <div class="summary-row">
+        <span class="label">Delivery</span>
+        <span class="price" style="color:#007700;">FREE</span>
+      </div>
+      <div class="summary-row total">
+        <span class="label">Total</span>
+        <span class="price">£110.96</span>
+      </div>
+
+      <button class="place-order-btn" onclick="placeOrder()">
+        🔒 Place Order — £110.96
+      </button>
+
+      <div class="secure-notice">
+        🔒 SSL encrypted — your details are safe
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- SUCCESS POPUP -->
+<div class="popup-overlay" id="successPopup">
+  <div class="popup-box">
+    <div class="popup-icon">✅</div>
+    <h2>Order Placed!</h2>
+    <p>Thank you for your order. Your confirmation has been sent to your email.</p>
+    <div class="order-num">Order #TF-2026-08841</div>
+    <p style="font-size:13px; color:#888;">Estimated delivery: 3–5 working days</p>
+    <button class="popup-btn" onclick="window.location.href='index.html'">
+      Continue Shopping
+    </button>
+  </div>
+</div>
+
+<footer>
+  <div class="footer-bottom">
+    © 2026 Tradefix Ltd. All rights reserved. | Secure payments | VAT No: 123 4567 89
+  </div>
+</footer>
+
+<script>
+  function selectDelivery(el) {
+    document.querySelectorAll('.delivery-option').forEach(o => o.classList.remove('selected'));
+    el.classList.add('selected');
+    el.querySelector('input[type="radio"]').checked = true;
+  }
+
+  function switchTab(btn, sectionId) {
+    document.querySelectorAll('.pay-tab').forEach(t => t.classList.remove('active'));
+    btn.classList.add('active');
+    ['card-section','paypal-section','account-section'].forEach(id => {
+      document.getElementById(id).style.display = 'none';
+    });
+    document.getElementById(sectionId).style.display = 'block';
+  }
+
+  function placeOrder() {
+    document.getElementById('successPopup').classList.add('show');
+  }
+</script>
+
+</body>
+</html>

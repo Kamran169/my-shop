@@ -1,0 +1,745 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Tradefix – Admin Panel</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: Arial, sans-serif; background: #f0f0f0; color: #222; display: flex; min-height: 100vh; }
+
+    /* SIDEBAR */
+    .sidebar {
+      width: 240px; background: #1a1a1a; color: white;
+      display: flex; flex-direction: column; flex-shrink: 0;
+      position: fixed; top: 0; left: 0; height: 100vh; overflow-y: auto; z-index: 100;
+    }
+    .sidebar-logo {
+      padding: 20px; font-size: 22px; font-weight: 900;
+      border-bottom: 1px solid #333; color: white; text-decoration: none;
+    }
+    .sidebar-logo span { color: #ffe000; }
+    .sidebar-logo small { display: block; font-size: 11px; font-weight: normal; color: #888; margin-top: 2px; }
+
+    .sidebar-menu { flex: 1; padding: 16px 0; }
+    .menu-label { font-size: 10px; color: #666; padding: 12px 20px 6px; text-transform: uppercase; letter-spacing: 1px; }
+    .menu-item {
+      display: flex; align-items: center; gap: 10px;
+      padding: 11px 20px; color: #bbb; text-decoration: none;
+      font-size: 14px; cursor: pointer; border: none; background: none; width: 100%; text-align: left;
+    }
+    .menu-item:hover { background: #2a2a2a; color: white; }
+    .menu-item.active { background: #cc0000; color: white; }
+    .menu-item .icon { font-size: 17px; width: 22px; }
+
+    .sidebar-footer {
+      padding: 16px 20px; border-top: 1px solid #333; font-size: 12px; color: #666;
+    }
+
+    /* MAIN CONTENT */
+    .main { margin-left: 240px; flex: 1; display: flex; flex-direction: column; min-height: 100vh; }
+
+    /* TOP BAR */
+    .topbar {
+      background: white; border-bottom: 1px solid #ddd;
+      padding: 14px 28px; display: flex; align-items: center;
+      justify-content: space-between; position: sticky; top: 0; z-index: 50;
+    }
+    .topbar h1 { font-size: 20px; font-weight: 900; }
+    .topbar-right { display: flex; align-items: center; gap: 16px; }
+    .topbar-right .admin-name { font-size: 14px; color: #555; }
+    .view-site-btn {
+      background: #cc0000; color: white; border: none;
+      padding: 8px 16px; border-radius: 4px; cursor: pointer;
+      font-size: 13px; font-weight: bold; text-decoration: none;
+    }
+
+    /* CONTENT AREA */
+    .content { padding: 28px; flex: 1; }
+
+    /* STAT CARDS */
+    .stats-grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px; margin-bottom: 28px;
+    }
+    .stat-card {
+      background: white; border-radius: 8px; padding: 20px;
+      border-left: 4px solid #cc0000; display: flex;
+      justify-content: space-between; align-items: center;
+    }
+    .stat-card.green { border-left-color: #007700; }
+    .stat-card.blue { border-left-color: #0055cc; }
+    .stat-card.orange { border-left-color: #ff6600; }
+    .stat-label { font-size: 12px; color: #888; margin-bottom: 6px; }
+    .stat-value { font-size: 28px; font-weight: 900; }
+    .stat-change { font-size: 12px; margin-top: 4px; }
+    .stat-change.up { color: #007700; }
+    .stat-change.down { color: #cc0000; }
+    .stat-icon { font-size: 36px; opacity: 0.3; }
+
+    /* SECTION TITLE */
+    .section-title {
+      font-size: 17px; font-weight: 900; margin-bottom: 16px;
+      border-left: 4px solid #cc0000; padding-left: 12px;
+    }
+
+    /* TABLE */
+    .table-box {
+      background: white; border-radius: 8px;
+      border: 1px solid #ddd; overflow: hidden; margin-bottom: 28px;
+    }
+    .table-toolbar {
+      padding: 14px 18px; display: flex; justify-content: space-between;
+      align-items: center; flex-wrap: wrap; gap: 10px;
+      border-bottom: 1px solid #eee;
+    }
+    .table-toolbar input {
+      padding: 8px 12px; border: 1px solid #ddd;
+      border-radius: 4px; font-size: 13px; width: 220px;
+    }
+    .table-toolbar-btns { display: flex; gap: 8px; }
+    .btn-add {
+      background: #cc0000; color: white; border: none;
+      padding: 8px 16px; border-radius: 4px; cursor: pointer;
+      font-size: 13px; font-weight: bold;
+    }
+    .btn-add:hover { background: #aa0000; }
+    .btn-export {
+      background: #222; color: white; border: none;
+      padding: 8px 14px; border-radius: 4px; cursor: pointer; font-size: 13px;
+    }
+
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    thead { background: #f9f9f9; }
+    th { padding: 12px 16px; text-align: left; font-size: 12px; color: #888; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 1px solid #eee; }
+    td { padding: 13px 16px; border-bottom: 1px solid #f0f0f0; vertical-align: middle; }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: #fafafa; }
+
+    .product-thumb { font-size: 28px; width: 44px; text-align: center; }
+    .product-info .name { font-weight: bold; margin-bottom: 2px; }
+    .product-info .code { font-size: 11px; color: #aaa; }
+
+    .badge {
+      display: inline-block; padding: 3px 10px; border-radius: 20px;
+      font-size: 11px; font-weight: bold;
+    }
+    .badge-green { background: #e8f5e9; color: #2e7d32; }
+    .badge-red { background: #ffebee; color: #c62828; }
+    .badge-orange { background: #fff3e0; color: #e65100; }
+    .badge-blue { background: #e3f2fd; color: #1565c0; }
+
+    .action-btns { display: flex; gap: 6px; }
+    .btn-edit {
+      background: #f0f0f0; border: none; padding: 6px 12px;
+      border-radius: 4px; cursor: pointer; font-size: 12px; font-weight: bold;
+    }
+    .btn-edit:hover { background: #222; color: white; }
+    .btn-delete {
+      background: #ffebee; color: #cc0000; border: none;
+      padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 12px; font-weight: bold;
+    }
+    .btn-delete:hover { background: #cc0000; color: white; }
+
+    /* MODAL */
+    .modal-overlay {
+      display: none; position: fixed; top: 0; left: 0;
+      width: 100%; height: 100%; background: rgba(0,0,0,0.5);
+      z-index: 999; align-items: center; justify-content: center;
+    }
+    .modal-overlay.show { display: flex; }
+    .modal {
+      background: white; border-radius: 8px; width: 90%; max-width: 560px;
+      max-height: 90vh; overflow-y: auto;
+    }
+    .modal-header {
+      background: #222; color: white; padding: 16px 20px;
+      display: flex; justify-content: space-between; align-items: center;
+      font-size: 16px; font-weight: bold;
+    }
+    .modal-close {
+      background: none; border: none; color: white;
+      font-size: 22px; cursor: pointer; line-height: 1;
+    }
+    .modal-body { padding: 24px; }
+    .modal-footer { padding: 16px 24px; border-top: 1px solid #eee; display: flex; gap: 10px; justify-content: flex-end; }
+
+    .form-group { display: flex; flex-direction: column; gap: 6px; margin-bottom: 16px; }
+    .form-group label { font-size: 13px; font-weight: bold; color: #444; }
+    .form-group input, .form-group select, .form-group textarea {
+      padding: 10px 12px; border: 1px solid #ddd;
+      border-radius: 4px; font-size: 14px; outline: none; font-family: inherit;
+    }
+    .form-group input:focus, .form-group select:focus { border-color: #cc0000; }
+    .form-row { display: flex; gap: 12px; }
+    .form-row .form-group { flex: 1; }
+
+    .btn-save {
+      background: #cc0000; color: white; border: none;
+      padding: 10px 24px; border-radius: 4px; cursor: pointer;
+      font-size: 14px; font-weight: bold;
+    }
+    .btn-cancel {
+      background: #f0f0f0; border: none; padding: 10px 20px;
+      border-radius: 4px; cursor: pointer; font-size: 14px;
+    }
+
+    /* ORDERS TABLE */
+    .orders-summary {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 28px;
+    }
+    .mini-card {
+      background: white; border-radius: 8px; padding: 20px;
+      border: 1px solid #ddd;
+    }
+    .mini-card h4 { font-size: 14px; font-weight: bold; margin-bottom: 14px; border-left: 3px solid #cc0000; padding-left: 10px; }
+    .mini-row {
+      display: flex; justify-content: space-between;
+      font-size: 13px; padding: 8px 0; border-bottom: 1px solid #f0f0f0;
+    }
+    .mini-row:last-child { border-bottom: none; }
+    .mini-row .label { color: #666; }
+    .mini-row .value { font-weight: bold; }
+
+    /* PAGES */
+    .page { display: none; }
+    .page.active { display: block; }
+
+    /* RESPONSIVE */
+    @media (max-width: 768px) {
+      .sidebar { width: 60px; }
+      .sidebar-logo small, .menu-label, .menu-item span { display: none; }
+      .main { margin-left: 60px; }
+      .orders-summary { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<div class="sidebar">
+  <a class="sidebar-logo" href="index.html">
+    Trade<span>fix</span>
+    <small>Admin Panel</small>
+  </a>
+  <div class="sidebar-menu">
+    <div class="menu-label">Main</div>
+    <button class="menu-item active" onclick="showPage('dashboard', this)">
+      <span class="icon">📊</span><span>Dashboard</span>
+    </button>
+    <button class="menu-item" onclick="showPage('products', this)">
+      <span class="icon">📦</span><span>Products</span>
+    </button>
+    <button class="menu-item" onclick="showPage('orders', this)">
+      <span class="icon">🛒</span><span>Orders</span>
+    </button>
+    <button class="menu-item" onclick="showPage('customers', this)">
+      <span class="icon">👥</span><span>Customers</span>
+    </button>
+
+    <div class="menu-label">Settings</div>
+    <button class="menu-item" onclick="showPage('categories', this)">
+      <span class="icon">🗂️</span><span>Categories</span>
+    </button>
+    <button class="menu-item" onclick="showPage('delivery', this)">
+      <span class="icon">🚚</span><span>Delivery</span>
+    </button>
+    <button class="menu-item" onclick="showPage('settings', this)">
+      <span class="icon">⚙️</span><span>Settings</span>
+    </button>
+  </div>
+  <div class="sidebar-footer">
+    👤 Admin User<br>v1.0.0
+  </div>
+</div>
+
+<!-- MAIN -->
+<div class="main">
+  <div class="topbar">
+    <h1 id="page-title">📊 Dashboard</h1>
+    <div class="topbar-right">
+      <span class="admin-name">👤 Admin</span>
+      <a href="index.html" class="view-site-btn">🌐 View Site</a>
+    </div>
+  </div>
+
+  <div class="content">
+
+    <!-- ── DASHBOARD ── -->
+    <div class="page active" id="page-dashboard">
+
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div>
+            <div class="stat-label">Total Revenue</div>
+            <div class="stat-value">£48,291</div>
+            <div class="stat-change up">▲ 12% this month</div>
+          </div>
+          <div class="stat-icon">💷</div>
+        </div>
+        <div class="stat-card green">
+          <div>
+            <div class="stat-label">Total Orders</div>
+            <div class="stat-value">1,284</div>
+            <div class="stat-change up">▲ 8% this month</div>
+          </div>
+          <div class="stat-icon">🛒</div>
+        </div>
+        <div class="stat-card blue">
+          <div>
+            <div class="stat-label">Total Customers</div>
+            <div class="stat-value">3,847</div>
+            <div class="stat-change up">▲ 5% this month</div>
+          </div>
+          <div class="stat-icon">👥</div>
+        </div>
+        <div class="stat-card orange">
+          <div>
+            <div class="stat-label">Total Products</div>
+            <div class="stat-value">245</div>
+            <div class="stat-change down">▼ 3 out of stock</div>
+          </div>
+          <div class="stat-icon">📦</div>
+        </div>
+      </div>
+
+      <div class="orders-summary">
+        <div class="mini-card">
+          <h4>📋 Recent Orders</h4>
+          <div class="mini-row"><span class="label">#TF-2026-08841 — John S.</span><span class="value">£110.96</span></div>
+          <div class="mini-row"><span class="label">#TF-2026-08840 — Sarah M.</span><span class="value">£67.50</span></div>
+          <div class="mini-row"><span class="label">#TF-2026-08839 — Dave W.</span><span class="value">£234.00</span></div>
+          <div class="mini-row"><span class="label">#TF-2026-08838 — Ali R.</span><span class="value">£44.99</span></div>
+          <div class="mini-row"><span class="label">#TF-2026-08837 — Emma T.</span><span class="value">£89.99</span></div>
+        </div>
+        <div class="mini-card">
+          <h4>⚠️ Low Stock Alerts</h4>
+          <div class="mini-row"><span class="label">Circular Saw 185mm</span><span class="value" style="color:#cc0000;">5 left</span></div>
+          <div class="mini-row"><span class="label">Aluminium Step Ladder 3 Tread</span><span class="value" style="color:#cc0000;">3 left</span></div>
+          <div class="mini-row"><span class="label">18V Battery 5.0Ah</span><span class="value" style="color:#ff6600;">8 left</span></div>
+          <div class="mini-row"><span class="label">Digital Laser Measure</span><span class="value" style="color:#ff6600;">11 left</span></div>
+          <div class="mini-row"><span class="label">Safety Helmet Class 1</span><span class="value" style="color:#cc0000;">2 left</span></div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ── PRODUCTS ── -->
+    <div class="page" id="page-products">
+      <div class="table-box">
+        <div class="table-toolbar">
+          <input type="text" placeholder="🔍 Search products..." oninput="filterTable(this, 'products-table')" />
+          <div class="table-toolbar-btns">
+            <button class="btn-export">📥 Export</button>
+            <button class="btn-add" onclick="openModal('add')">+ Add Product</button>
+          </div>
+        </div>
+        <table id="products-table">
+          <thead>
+            <tr>
+              <th></th>
+              <th>Product</th>
+              <th>Category</th>
+              <th>Price</th>
+              <th>Stock</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="product-thumb">⚡</td>
+              <td><div class="product-info"><div class="name">18V Cordless Drill Driver</div><div class="code">Code: 34567</div></div></td>
+              <td>Power Tools</td>
+              <td><strong>£69.99</strong></td>
+              <td>42</td>
+              <td><span class="badge badge-green">Active</span></td>
+              <td><div class="action-btns"><button class="btn-edit" onclick="openModal('edit', '18V Cordless Drill', '69.99', 'Power Tools', '42')">✏️ Edit</button><button class="btn-delete" onclick="deleteRow(this)">🗑️</button></div></td>
+            </tr>
+            <tr>
+              <td class="product-thumb">🔨</td>
+              <td><div class="product-info"><div class="name">Heavy Duty Claw Hammer 16oz</div><div class="code">Code: 12345</div></div></td>
+              <td>Hand Tools</td>
+              <td><strong>£12.99</strong></td>
+              <td>118</td>
+              <td><span class="badge badge-green">Active</span></td>
+              <td><div class="action-btns"><button class="btn-edit" onclick="openModal('edit', 'Claw Hammer 16oz', '12.99', 'Hand Tools', '118')">✏️ Edit</button><button class="btn-delete" onclick="deleteRow(this)">🗑️</button></div></td>
+            </tr>
+            <tr>
+              <td class="product-thumb">🪚</td>
+              <td><div class="product-info"><div class="name">Circular Saw 185mm 1200W</div><div class="code">Code: 56789</div></div></td>
+              <td>Power Tools</td>
+              <td><strong>£64.99</strong></td>
+              <td>5</td>
+              <td><span class="badge badge-orange">Low Stock</span></td>
+              <td><div class="action-btns"><button class="btn-edit" onclick="openModal('edit', 'Circular Saw 185mm', '64.99', 'Power Tools', '5')">✏️ Edit</button><button class="btn-delete" onclick="deleteRow(this)">🗑️</button></div></td>
+            </tr>
+            <tr>
+              <td class="product-thumb">💡</td>
+              <td><div class="product-info"><div class="name">LED GU10 Bulbs 6W Pack of 10</div><div class="code">Code: 45678</div></div></td>
+              <td>Electrical</td>
+              <td><strong>£14.99</strong></td>
+              <td>200</td>
+              <td><span class="badge badge-green">Active</span></td>
+              <td><div class="action-btns"><button class="btn-edit" onclick="openModal('edit', 'LED GU10 Bulbs', '14.99', 'Electrical', '200')">✏️ Edit</button><button class="btn-delete" onclick="deleteRow(this)">🗑️</button></div></td>
+            </tr>
+            <tr>
+              <td class="product-thumb">🪜</td>
+              <td><div class="product-info"><div class="name">Aluminium Step Ladder 3 Tread</div><div class="code">Code: 01234</div></div></td>
+              <td>Storage & Ladders</td>
+              <td><strong>£29.99</strong></td>
+              <td>3</td>
+              <td><span class="badge badge-red">Critical</span></td>
+              <td><div class="action-btns"><button class="btn-edit" onclick="openModal('edit', 'Step Ladder 3 Tread', '29.99', 'Storage & Ladders', '3')">✏️ Edit</button><button class="btn-delete" onclick="deleteRow(this)">🗑️</button></div></td>
+            </tr>
+            <tr>
+              <td class="product-thumb">🔩</td>
+              <td><div class="product-info"><div class="name">Goldscrew Screws Pack 1400pcs</div><div class="code">Code: 23456</div></div></td>
+              <td>Screws & Fixings</td>
+              <td><strong>£14.99</strong></td>
+              <td>0</td>
+              <td><span class="badge badge-red">Out of Stock</span></td>
+              <td><div class="action-btns"><button class="btn-edit" onclick="openModal('edit', 'Goldscrew Pack', '14.99', 'Screws & Fixings', '0')">✏️ Edit</button><button class="btn-delete" onclick="deleteRow(this)">🗑️</button></div></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ── ORDERS ── -->
+    <div class="page" id="page-orders">
+      <div class="table-box">
+        <div class="table-toolbar">
+          <input type="text" placeholder="🔍 Search orders..." oninput="filterTable(this, 'orders-table')" />
+          <div class="table-toolbar-btns">
+            <button class="btn-export">📥 Export</button>
+          </div>
+        </div>
+        <table id="orders-table">
+          <thead>
+            <tr>
+              <th>Order #</th>
+              <th>Customer</th>
+              <th>Date</th>
+              <th>Items</th>
+              <th>Total</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>#TF-2026-08841</strong></td>
+              <td>John Smith</td>
+              <td>21 Jun 2026</td>
+              <td>3 items</td>
+              <td><strong>£110.96</strong></td>
+              <td><span class="badge badge-blue">Processing</span></td>
+              <td><button class="btn-edit">👁️ View</button></td>
+            </tr>
+            <tr>
+              <td><strong>#TF-2026-08840</strong></td>
+              <td>Sarah Moore</td>
+              <td>21 Jun 2026</td>
+              <td>1 item</td>
+              <td><strong>£67.50</strong></td>
+              <td><span class="badge badge-orange">Dispatched</span></td>
+              <td><button class="btn-edit">👁️ View</button></td>
+            </tr>
+            <tr>
+              <td><strong>#TF-2026-08839</strong></td>
+              <td>Dave Wilson</td>
+              <td>20 Jun 2026</td>
+              <td>5 items</td>
+              <td><strong>£234.00</strong></td>
+              <td><span class="badge badge-green">Delivered</span></td>
+              <td><button class="btn-edit">👁️ View</button></td>
+            </tr>
+            <tr>
+              <td><strong>#TF-2026-08838</strong></td>
+              <td>Ali Rahman</td>
+              <td>20 Jun 2026</td>
+              <td>2 items</td>
+              <td><strong>£44.99</strong></td>
+              <td><span class="badge badge-green">Delivered</span></td>
+              <td><button class="btn-edit">👁️ View</button></td>
+            </tr>
+            <tr>
+              <td><strong>#TF-2026-08837</strong></td>
+              <td>Emma Taylor</td>
+              <td>19 Jun 2026</td>
+              <td>1 item</td>
+              <td><strong>£89.99</strong></td>
+              <td><span class="badge badge-red">Cancelled</span></td>
+              <td><button class="btn-edit">👁️ View</button></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ── CUSTOMERS ── -->
+    <div class="page" id="page-customers">
+      <div class="table-box">
+        <div class="table-toolbar">
+          <input type="text" placeholder="🔍 Search customers..." oninput="filterTable(this, 'customers-table')" />
+          <div class="table-toolbar-btns">
+            <button class="btn-export">📥 Export</button>
+          </div>
+        </div>
+        <table id="customers-table">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Email</th>
+              <th>Joined</th>
+              <th>Orders</th>
+              <th>Total Spent</th>
+              <th>Type</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>John Smith</strong></td>
+              <td>john@example.com</td>
+              <td>Jan 2026</td>
+              <td>12</td>
+              <td>£892.40</td>
+              <td><span class="badge badge-blue">Trade</span></td>
+              <td><button class="btn-edit">👁️ View</button></td>
+            </tr>
+            <tr>
+              <td><strong>Sarah Moore</strong></td>
+              <td>sarah@example.com</td>
+              <td>Mar 2026</td>
+              <td>4</td>
+              <td>£234.75</td>
+              <td><span class="badge badge-green">Personal</span></td>
+              <td><button class="btn-edit">👁️ View</button></td>
+            </tr>
+            <tr>
+              <td><strong>Dave Wilson</strong></td>
+              <td>dave@example.com</td>
+              <td>Feb 2026</td>
+              <td>27</td>
+              <td>£3,441.20</td>
+              <td><span class="badge badge-blue">Trade</span></td>
+              <td><button class="btn-edit">👁️ View</button></td>
+            </tr>
+            <tr>
+              <td><strong>Ali Rahman</strong></td>
+              <td>ali@example.com</td>
+              <td>May 2026</td>
+              <td>2</td>
+              <td>£112.98</td>
+              <td><span class="badge badge-green">Personal</span></td>
+              <td><button class="btn-edit">👁️ View</button></td>
+            </tr>
+            <tr>
+              <td><strong>Emma Taylor</strong></td>
+              <td>emma@example.com</td>
+              <td>Apr 2026</td>
+              <td>8</td>
+              <td>£654.30</td>
+              <td><span class="badge badge-blue">Trade</span></td>
+              <td><button class="btn-edit">👁️ View</button></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ── CATEGORIES ── -->
+    <div class="page" id="page-categories">
+      <div class="table-box">
+        <div class="table-toolbar">
+          <span style="font-weight:bold; font-size:14px;">Manage Categories</span>
+          <button class="btn-add">+ Add Category</button>
+        </div>
+        <table>
+          <thead>
+            <tr><th>Icon</th><th>Category Name</th><th>Products</th><th>Status</th><th>Actions</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>🔧</td><td><strong>Tools</strong></td><td>86</td><td><span class="badge badge-green">Active</span></td><td><div class="action-btns"><button class="btn-edit">✏️ Edit</button><button class="btn-delete" onclick="deleteRow(this)">🗑️</button></div></td></tr>
+            <tr><td>🔌</td><td><strong>Electrical & Lighting</strong></td><td>54</td><td><span class="badge badge-green">Active</span></td><td><div class="action-btns"><button class="btn-edit">✏️ Edit</button><button class="btn-delete" onclick="deleteRow(this)">🗑️</button></div></td></tr>
+            <tr><td>🚿</td><td><strong>Heating & Plumbing</strong></td><td>41</td><td><span class="badge badge-green">Active</span></td><td><div class="action-btns"><button class="btn-edit">✏️ Edit</button><button class="btn-delete" onclick="deleteRow(this)">🗑️</button></div></td></tr>
+            <tr><td>🔩</td><td><strong>Screws & Fixings</strong></td><td>38</td><td><span class="badge badge-green">Active</span></td><td><div class="action-btns"><button class="btn-edit">✏️ Edit</button><button class="btn-delete" onclick="deleteRow(this)">🗑️</button></div></td></tr>
+            <tr><td>🦺</td><td><strong>Safety & Workwear</strong></td><td>26</td><td><span class="badge badge-green">Active</span></td><td><div class="action-btns"><button class="btn-edit">✏️ Edit</button><button class="btn-delete" onclick="deleteRow(this)">🗑️</button></div></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ── DELIVERY ── -->
+    <div class="page" id="page-delivery">
+      <div class="table-box">
+        <div class="table-toolbar">
+          <span style="font-weight:bold; font-size:14px;">Delivery Settings</span>
+        </div>
+        <table>
+          <thead>
+            <tr><th>Method</th><th>Description</th><th>Price</th><th>Status</th><th>Actions</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Standard Delivery</strong></td><td>3–5 working days</td><td style="color:#007700;"><strong>FREE (over £50)</strong></td><td><span class="badge badge-green">Active</span></td><td><button class="btn-edit">✏️ Edit</button></td></tr>
+            <tr><td><strong>Next Day Delivery</strong></td><td>Order before 8pm</td><td><strong>£5.99</strong></td><td><span class="badge badge-green">Active</span></td><td><button class="btn-edit">✏️ Edit</button></td></tr>
+            <tr><td><strong>Sprint Express</strong></td><td>As little as 20 minutes</td><td><strong>£9.99</strong></td><td><span class="badge badge-green">Active</span></td><td><button class="btn-edit">✏️ Edit</button></td></tr>
+            <tr><td><strong>Click & Collect</strong></td><td>Ready in 1 minute in store</td><td style="color:#007700;"><strong>FREE</strong></td><td><span class="badge badge-green">Active</span></td><td><button class="btn-edit">✏️ Edit</button></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ── SETTINGS ── -->
+    <div class="page" id="page-settings">
+      <div class="table-box" style="max-width:600px;">
+        <div class="table-toolbar">
+          <span style="font-weight:bold; font-size:14px;">⚙️ Store Settings</span>
+        </div>
+        <div style="padding:24px; display:flex; flex-direction:column; gap:16px;">
+          <div class="form-group">
+            <label>Store Name</label>
+            <input type="text" value="Tradefix" />
+          </div>
+          <div class="form-group">
+            <label>Store Email</label>
+            <input type="email" value="admin@tradefix.co.uk" />
+          </div>
+          <div class="form-group">
+            <label>Phone Number</label>
+            <input type="tel" value="0800 000 0000" />
+          </div>
+          <div class="form-group">
+            <label>VAT Number</label>
+            <input type="text" value="123 4567 89" />
+          </div>
+          <div class="form-group">
+            <label>Currency</label>
+            <select><option>GBP (£)</option><option>EUR (€)</option><option>USD ($)</option></select>
+          </div>
+          <div class="form-group">
+            <label>Free Delivery Over</label>
+            <input type="text" value="£50.00" />
+          </div>
+          <button class="btn-save" style="width:fit-content;">💾 Save Settings</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ADD / EDIT PRODUCT MODAL -->
+<div class="modal-overlay" id="productModal">
+  <div class="modal">
+    <div class="modal-header">
+      <span id="modal-title">Add New Product</span>
+      <button class="modal-close" onclick="closeModal()">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-row">
+        <div class="form-group">
+          <label>Product Name *</label>
+          <input type="text" id="modal-name" placeholder="e.g. Claw Hammer 16oz" />
+        </div>
+        <div class="form-group">
+          <label>Category *</label>
+          <select id="modal-cat">
+            <option>Power Tools</option>
+            <option>Hand Tools</option>
+            <option>Electrical</option>
+            <option>Plumbing</option>
+            <option>Screws & Fixings</option>
+            <option>Storage & Ladders</option>
+            <option>Safety & Workwear</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Price (£) *</label>
+          <input type="number" id="modal-price" placeholder="0.00" step="0.01" />
+        </div>
+        <div class="form-group">
+          <label>Stock Quantity *</label>
+          <input type="number" id="modal-stock" placeholder="0" />
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Was Price (£) — optional</label>
+          <input type="number" placeholder="0.00" step="0.01" />
+        </div>
+        <div class="form-group">
+          <label>Product Code</label>
+          <input type="text" placeholder="e.g. 12345" />
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Description</label>
+        <textarea rows="3" placeholder="Product description..."></textarea>
+      </div>
+      <div class="form-group">
+        <label>Status</label>
+        <select><option>Active</option><option>Draft</option><option>Out of Stock</option></select>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-cancel" onclick="closeModal()">Cancel</button>
+      <button class="btn-save" onclick="saveProduct()">💾 Save Product</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  function showPage(name, btn) {
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.menu-item').forEach(m => m.classList.remove('active'));
+    document.getElementById('page-' + name).classList.add('active');
+    btn.classList.add('active');
+    const titles = {
+      dashboard: '📊 Dashboard', products: '📦 Products',
+      orders: '🛒 Orders', customers: '👥 Customers',
+      categories: '🗂️ Categories', delivery: '🚚 Delivery', settings: '⚙️ Settings'
+    };
+    document.getElementById('page-title').textContent = titles[name];
+  }
+
+  function openModal(mode, name='', price='', cat='', stock='') {
+    document.getElementById('modal-title').textContent = mode === 'add' ? 'Add New Product' : 'Edit Product';
+    document.getElementById('modal-name').value = name;
+    document.getElementById('modal-price').value = price;
+    document.getElementById('modal-stock').value = stock;
+    document.getElementById('productModal').classList.add('show');
+  }
+
+  function closeModal() {
+    document.getElementById('productModal').classList.remove('show');
+  }
+
+  function saveProduct() {
+    const name = document.getElementById('modal-name').value;
+    if (!name) { alert('Please enter a product name.'); return; }
+    alert('✅ Product saved successfully!');
+    closeModal();
+  }
+
+  function deleteRow(btn) {
+    if (confirm('Are you sure you want to delete this item?')) {
+      btn.closest('tr').remove();
+    }
+  }
+
+  function filterTable(input, tableId) {
+    const filter = input.value.toLowerCase();
+    const rows = document.querySelectorAll('#' + tableId + ' tbody tr');
+    rows.forEach(row => {
+      row.style.display = row.textContent.toLowerCase().includes(filter) ? '' : 'none';
+    });
+  }
+</script>
+
+</body>
+</html>

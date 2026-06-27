@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Tradefix – My Basket</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: Arial, sans-serif; background: #f4f4f4; color: #222; }
+
+    .top-bar {
+      background: #cc0000; color: white; font-size: 13px;
+      padding: 6px 20px; display: flex; justify-content: flex-end; gap: 20px;
+    }
+    .top-bar a { color: white; text-decoration: none; }
+
+    header {
+      background: #cc0000; padding: 10px 20px;
+      display: flex; align-items: center; gap: 16px; flex-wrap: wrap;
+    }
+    .logo { font-size: 26px; font-weight: 900; color: white; text-decoration: none; }
+    .logo span { color: #ffe000; }
+    .search-bar { flex: 1; display: flex; min-width: 200px; }
+    .search-bar input {
+      flex: 1; padding: 10px 14px; border: none;
+      font-size: 15px; border-radius: 4px 0 0 4px; outline: none;
+    }
+    .search-bar button {
+      background: #ffe000; border: none; padding: 10px 18px;
+      font-weight: bold; cursor: pointer; border-radius: 0 4px 4px 0;
+    }
+    .header-actions { display: flex; gap: 18px; align-items: center; }
+    .header-actions a { color: white; text-decoration: none; font-size: 13px; }
+    .basket-btn {
+      background: #ffe000; color: #222 !important;
+      padding: 8px 16px; border-radius: 4px; font-weight: bold;
+    }
+
+    nav { background: #222; display: flex; overflow-x: auto; scrollbar-width: none; }
+    nav a {
+      color: #fff; text-decoration: none; padding: 12px 16px;
+      font-size: 13px; white-space: nowrap;
+    }
+    nav a:hover { background: #cc0000; }
+
+    .breadcrumb {
+      background: white; padding: 10px 20px;
+      font-size: 13px; border-bottom: 1px solid #ddd;
+    }
+    .breadcrumb a { color: #cc0000; text-decoration: none; }
+
+    /* STEPS BAR */
+    .steps-bar {
+      background: white; border-bottom: 1px solid #ddd;
+      padding: 16px 20px; display: flex;
+      justify-content: center; gap: 0;
+    }
+    .step {
+      display: flex; align-items: center; gap: 8px;
+      font-size: 13px; color: #888;
+    }
+    .step.active { color: #cc0000; font-weight: bold; }
+    .step.done { color: #007700; }
+    .step-num {
+      width: 28px; height: 28px; border-radius: 50%;
+      background: #ddd; color: #888;
+      display: flex; align-items: center; justify-content: center;
+      font-weight: bold; font-size: 13px;
+    }
+    .step.active .step-num { background: #cc0000; color: white; }
+    .step.done .step-num { background: #007700; color: white; }
+    .step-line { width: 60px; height: 2px; background: #ddd; margin: 0 8px; }
+
+    /* MAIN */
+    .main-layout {
+      display: flex; gap: 24px;
+      max-width: 1100px; margin: 24px auto; padding: 0 20px;
+      align-items: flex-start;
+    }
+
+    /* BASKET ITEMS */
+    .basket-section { flex: 1; }
+    .basket-title {
+      font-size: 20px; font-weight: 900;
+      margin-bottom: 16px; border-left: 4px solid #cc0000;
+      padding-left: 12px;
+    }
+
+    .basket-item {
+      background: white; border: 1px solid #ddd;
+      border-radius: 6px; padding: 16px;
+      display: flex; gap: 16px; margin-bottom: 12px;
+      align-items: center; flex-wrap: wrap;
+    }
+    .item-img {
+      width: 80px; height: 80px; background: #f0f0f0;
+      border-radius: 4px; display: flex; align-items: center;
+      justify-content: center; font-size: 36px; flex-shrink: 0;
+    }
+    .item-details { flex: 1; min-width: 150px; }
+    .item-name { font-size: 14px; font-weight: bold; margin-bottom: 4px; }
+    .item-code { font-size: 12px; color: #888; margin-bottom: 6px; }
+    .item-stock { font-size: 12px; color: #007700; font-weight: bold; }
+
+    .item-qty {
+      display: flex; align-items: center; gap: 8px;
+    }
+    .qty-btn {
+      width: 32px; height: 32px; border: 1px solid #ddd;
+      background: #f4f4f4; font-size: 18px; cursor: pointer;
+      border-radius: 4px; display: flex; align-items: center; justify-content: center;
+    }
+    .qty-btn:hover { background: #cc0000; color: white; border-color: #cc0000; }
+    .qty-num {
+      width: 40px; text-align: center; font-size: 16px;
+      font-weight: bold; border: 1px solid #ddd; padding: 4px;
+      border-radius: 4px;
+    }
+
+    .item-price-section { text-align: right; min-width: 100px; }
+    .item-unit-price { font-size: 12px; color: #888; }
+    .item-total { font-size: 20px; font-weight: 900; color: #cc0000; }
+    .item-vat { font-size: 11px; color: #888; }
+
+    .remove-btn {
+      background: none; border: none; color: #cc0000;
+      cursor: pointer; font-size: 13px; text-decoration: underline;
+      margin-top: 8px; display: block;
+    }
+    .remove-btn:hover { color: #880000; }
+
+    /* PROMO CODE */
+    .promo-box {
+      background: white; border: 1px solid #ddd; border-radius: 6px;
+      padding: 16px; margin-bottom: 12px;
+    }
+    .promo-box h4 { font-size: 14px; margin-bottom: 10px; }
+    .promo-input { display: flex; gap: 8px; }
+    .promo-input input {
+      flex: 1; padding: 9px 12px; border: 1px solid #ddd;
+      border-radius: 4px; font-size: 14px;
+    }
+    .promo-input button {
+      background: #222; color: white; border: none;
+      padding: 9px 16px; border-radius: 4px; cursor: pointer;
+      font-weight: bold; font-size: 13px;
+    }
+    .promo-input button:hover { background: #cc0000; }
+
+    /* CONTINUE SHOPPING */
+    .continue-link {
+      color: #cc0000; text-decoration: none; font-size: 13px;
+      display: inline-flex; align-items: center; gap: 6px; margin-top: 8px;
+    }
+    .continue-link:hover { text-decoration: underline; }
+
+    /* ORDER SUMMARY */
+    .summary-box {
+      width: 300px; flex-shrink: 0;
+      background: white; border: 1px solid #ddd;
+      border-radius: 6px; overflow: hidden;
+      position: sticky; top: 20px;
+    }
+    .summary-title {
+      background: #222; color: white; padding: 14px 16px;
+      font-size: 15px; font-weight: bold;
+    }
+    .summary-body { padding: 16px; }
+    .summary-row {
+      display: flex; justify-content: space-between;
+      font-size: 14px; margin-bottom: 12px;
+    }
+    .summary-row.total {
+      font-size: 18px; font-weight: 900;
+      border-top: 2px solid #ddd; padding-top: 12px;
+      margin-top: 4px;
+    }
+    .summary-row.total .price { color: #cc0000; }
+    .summary-row .label { color: #555; }
+    .summary-row .price { font-weight: bold; }
+
+    .free-delivery {
+      background: #e8f5e9; border: 1px solid #c8e6c9;
+      border-radius: 4px; padding: 10px 12px;
+      font-size: 13px; color: #2e7d32;
+      margin-bottom: 14px; text-align: center;
+    }
+
+    .checkout-btn {
+      background: #cc0000; color: white; border: none;
+      width: 100%; padding: 14px; font-size: 16px;
+      font-weight: bold; border-radius: 4px; cursor: pointer;
+      margin-bottom: 10px;
+    }
+    .checkout-btn:hover { background: #aa0000; }
+
+    .paypal-btn {
+      background: #ffc439; color: #003087; border: none;
+      width: 100%; padding: 12px; font-size: 15px;
+      font-weight: bold; border-radius: 4px; cursor: pointer;
+      margin-bottom: 10px;
+    }
+
+    .secure-notice {
+      text-align: center; font-size: 12px; color: #888;
+      margin-top: 8px;
+    }
+
+    /* EMPTY BASKET */
+    .empty-basket {
+      background: white; border: 1px solid #ddd; border-radius: 6px;
+      padding: 60px 20px; text-align: center; display: none;
+    }
+    .empty-basket .empty-icon { font-size: 60px; margin-bottom: 16px; }
+    .empty-basket h3 { font-size: 20px; margin-bottom: 8px; }
+    .empty-basket p { color: #888; margin-bottom: 20px; }
+    .shop-btn {
+      background: #cc0000; color: white; border: none;
+      padding: 12px 28px; border-radius: 4px; font-size: 15px;
+      font-weight: bold; cursor: pointer; text-decoration: none;
+      display: inline-block;
+    }
+
+    footer { background: #222; color: #ccc; margin-top: 40px; }
+    .footer-bottom {
+      background: #111; text-align: center;
+      padding: 14px; font-size: 12px; color: #666;
+    }
+
+    @media (max-width: 700px) {
+      .main-layout { flex-direction: column; }
+      .summary-box { width: 100%; position: static; }
+      .step-line { width: 30px; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="top-bar">
+  <a href="index.html#help">Need Help?</a>
+  <a href="login.html">Sign In / Register</a>
+  <a href="index.html#track">Track My Order</a>
+</div>
+
+<header>
+  <a class="logo" href="index.html">Trade<span>fix</span></a>
+  <div class="search-bar">
+    <input type="text" placeholder="Search over 30,000 products..." />
+    <button>🔍 Search</button>
+  </div>
+  <div class="header-actions">
+    <a href="index.html#stores">📍 Find a Store</a>
+    <a href="login.html">👤 Sign In</a>
+    <a href="basket.html" class="basket-btn">🛒 Basket (3)</a>
+  </div>
+</header>
+
+<nav>
+  <a href="products.html">🔧 Tools</a>
+  <a href="products.html">🔌 Electrical</a>
+  <a href="products.html">🚿 Plumbing</a>
+  <a href="products.html">🪟 Bathrooms</a>
+  <a href="products.html">🌿 Outdoor</a>
+  <a href="products.html">🔩 Screws & Fixings</a>
+  <a href="products.html">🔐 Security</a>
+  <a href="products.html">🏗️ Building</a>
+  <a href="products.html">🦺 Safety & Workwear</a>
+  <a href="products.html">🎨 Painting</a>
+  <a href="products.html">🪜 Ladders</a>
+  <a href="products.html">🚗 Auto & Cleaning</a>
+</nav>
+
+<div class="breadcrumb">
+  <a href="index.html">Home</a> › My Basket
+</div>
+
+<!-- STEPS -->
+<div class="steps-bar">
+  <div class="step active">
+    <div class="step-num">1</div> Basket
+  </div>
+  <div class="step-line"></div>
+  <div class="step">
+    <div class="step-num">2</div> Details &amp; Payment
+  </div>
+  <div class="step-line"></div>
+  <div class="step">
+    <div class="step-num">3</div> Confirm
+  </div>
+</div>
+
+<!-- MAIN -->
+<div class="main-layout">
+
+  <!-- BASKET ITEMS -->
+  <div class="basket-section">
+    <div class="basket-title">🛒 My Basket (3 items)</div>
+
+    <!-- ITEM 1 -->
+    <div class="basket-item" id="item1">
+      <div class="item-img">⚡</div>
+      <div class="item-details">
+        <div class="item-name">18V Cordless Drill Driver with 2 Batteries</div>
+        <div class="item-code">Product Code: 34567</div>
+        <div class="item-stock">✅ In Stock</div>
+        <button class="remove-btn" onclick="removeItem('item1')">🗑️ Remove</button>
+      </div>
+      <div class="item-qty">
+        <button class="qty-btn" onclick="changeQty('qty1', -1)">−</button>
+        <input class="qty-num" id="qty1" type="number" value="1" min="1" onchange="updateTotal()" />
+        <button class="qty-btn" onclick="changeQty('qty1', 1)">+</button>
+      </div>
+      <div class="item-price-section">
+        <div class="item-unit-price">£69.99 each</div>
+        <div class="item-total" id="total1">£69.99</div>
+        <div class="item-vat">Inc. VAT</div>
+      </div>
+    </div>
+
+    <!-- ITEM 2 -->
+    <div class="basket-item" id="item2">
+      <div class="item-img">🔨</div>
+      <div class="item-details">
+        <div class="item-name">Heavy Duty Claw Hammer 16oz</div>
+        <div class="item-code">Product Code: 12345</div>
+        <div class="item-stock">✅ In Stock</div>
+        <button class="remove-btn" onclick="removeItem('item2')">🗑️ Remove</button>
+      </div>
+      <div class="item-qty">
+        <button class="qty-btn" onclick="changeQty('qty2', -1)">−</button>
+        <input class="qty-num" id="qty2" type="number" value="2" min="1" onchange="updateTotal()" />
+        <button class="qty-btn" onclick="changeQty('qty2', 1)">+</button>
+      </div>
+      <div class="item-price-section">
+        <div class="item-unit-price">£12.99 each</div>
+        <div class="item-total" id="total2">£25.98</div>
+        <div class="item-vat">Inc. VAT</div>
+      </div>
+    </div>
+
+    <!-- ITEM 3 -->
+    <div class="basket-item" id="item3">
+      <div class="item-img">🔩</div>
+      <div class="item-details">
+        <div class="item-name">Goldscrew Multipurpose Screws Trade Pack 1400pcs</div>
+        <div class="item-code">Product Code: 23456</div>
+        <div class="item-stock">✅ In Stock</div>
+        <button class="remove-btn" onclick="removeItem('item3')">🗑️ Remove</button>
+      </div>
+      <div class="item-qty">
+        <button class="qty-btn" onclick="changeQty('qty3', -1)">−</button>
+        <input class="qty-num" id="qty3" type="number" value="1" min="1" onchange="updateTotal()" />
+        <button class="qty-btn" onclick="changeQty('qty3', 1)">+</button>
+      </div>
+      <div class="item-price-section">
+        <div class="item-unit-price">£14.99 each</div>
+        <div class="item-total" id="total3">£14.99</div>
+        <div class="item-vat">Inc. VAT</div>
+      </div>
+    </div>
+
+    <!-- PROMO CODE -->
+    <div class="promo-box">
+      <h4>🏷️ Have a promo code?</h4>
+      <div class="promo-input">
+        <input type="text" placeholder="Enter your code here" />
+        <button>Apply</button>
+      </div>
+    </div>
+
+    <a class="continue-link" href="products.html">← Continue Shopping</a>
+
+  </div>
+
+  <!-- ORDER SUMMARY -->
+  <div class="summary-box">
+    <div class="summary-title">📋 Order Summary</div>
+    <div class="summary-body">
+
+      <div class="free-delivery">
+        🚚 You qualify for <strong>FREE delivery!</strong>
+      </div>
+
+      <div class="summary-row">
+        <span class="label">Subtotal (ex. VAT)</span>
+        <span class="price" id="subtotal">£92.47</span>
+      </div>
+      <div class="summary-row">
+        <span class="label">VAT (20%)</span>
+        <span class="price" id="vat-amount">£18.49</span>
+      </div>
+      <div class="summary-row">
+        <span class="label">Delivery</span>
+        <span class="price" style="color:#007700;">FREE</span>
+      </div>
+      <div class="summary-row total">
+        <span class="label">Total</span>
+        <span class="price" id="grand-total">£110.96</span>
+      </div>
+
+      <button class="checkout-btn" onclick="window.location.href='checkout.html'">
+        ✅ Proceed to Checkout
+      </button>
+      <button class="paypal-btn">
+        Pay with 🅿 PayPal
+      </button>
+
+      <div class="secure-notice">
+        🔒 Secure checkout — SSL encrypted
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<footer>
+  <div class="footer-bottom">
+    © 2026 Tradefix Ltd. All rights reserved. | Secure payments | VAT No: 123 4567 89
+  </div>
+</footer>
+
+<script>
+  const prices = { qty1: 69.99, qty2: 12.99, qty3: 14.99 };
+
+  function changeQty(id, change) {
+    const input = document.getElementById(id);
+    let val = parseInt(input.value) + change;
+    if (val < 1) val = 1;
+    input.value = val;
+    updateItemTotal(id);
+    updateTotal();
+  }
+
+  function updateItemTotal(qtyId) {
+    const qty = parseInt(document.getElementById(qtyId).value);
+    const price = prices[qtyId];
+    const totalId = 'total' + qtyId.replace('qty', '');
+    document.getElementById(totalId).textContent = '£' + (qty * price).toFixed(2);
+  }
+
+  function updateTotal() {
+    let subtotalExVat = 0;
+    ['qty1','qty2','qty3'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) {
+        subtotalExVat += parseInt(el.value) * prices[id];
+        updateItemTotal(id);
+      }
+    });
+    const vat = subtotalExVat * 0.2 / 1.2;
+    const exVat = subtotalExVat - vat;
+    document.getElementById('subtotal').textContent = '£' + exVat.toFixed(2);
+    document.getElementById('vat-amount').textContent = '£' + vat.toFixed(2);
+    document.getElementById('grand-total').textContent = '£' + subtotalExVat.toFixed(2);
+  }
+
+  function removeItem(id) {
+    if (confirm('Remove this item from your basket?')) {
+      document.getElementById(id).style.display = 'none';
+      updateTotal();
+    }
+  }
+</script>
+
+</body>
+</html>
