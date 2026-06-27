@@ -1,31 +1,28 @@
 import { NextResponse } from 'next/server'
-import { prisma } from '@/lib/prisma'
+import { prisma } from '@/app/lib/prisma'
 
-export async function PUT(req: Request, { params }: { params: { id: string } }) {
+export async function PUT(req: Request, { params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params
   const body = await req.json()
-  const { name, code, category, price, wasPrice, stock, icon, badge, description, active } = body
-
   const product = await prisma.product.update({
-    where: { id: parseInt(params.id) },
+    where: { id: parseInt(id) },
     data: {
-      name,
-      code,
-      category,
-      price: parseFloat(price),
-      wasPrice: wasPrice ? parseFloat(wasPrice) : null,
-      stock: parseInt(stock),
-      icon,
-      badge: badge || null,
-      description: description || null,
-      active: active ?? true,
-    },
+      name: body.name,
+      price: parseFloat(body.price),
+      wasPrice: body.wasPrice ? parseFloat(body.wasPrice) : null,
+      category: body.category,
+      stock: parseInt(body.stock),
+      badge: body.badge,
+      active: body.active,
+    }
   })
   return NextResponse.json(product)
 }
 
-export async function DELETE(_req: Request, { params }: { params: { id: string } }) {
+export async function DELETE(req: Request, { params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params
   await prisma.product.delete({
-    where: { id: parseInt(params.id) },
+    where: { id: parseInt(id) }
   })
   return NextResponse.json({ success: true })
 }

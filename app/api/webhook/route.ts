@@ -36,15 +36,22 @@ export async function POST(request: Request) {
     if (!user) return NextResponse.json({ received: true })
 
     if (user.basketItems.length > 0) {
+      const name = session.customer_details?.name || 'Customer'
+      const nameParts = name.split(' ')
+      const firstName = nameParts[0] || 'Customer'
+      const lastName = nameParts.slice(1).join(' ') || 'Customer'
+
       await prisma.order.create({
         data: {
           userId: user.id,
           total: session.amount_total! / 100,
-          status: 'processing',
-          delivery: 'standard',
-          address: '',
+          status: 'PAID',
+          firstName,
+          lastName,
+          address1: '',
           city: '',
           postcode: '',
+          country: 'GB',
           items: {
             create: user.basketItems.map(item => ({
               productId: item.productId,

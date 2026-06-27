@@ -20,14 +20,9 @@ export default function ProductsClient({ products }: { products: any[] }) {
       return 0
     })
 
-  function handleAddToBasket(p: any) {
+  async function handleAddToBasket(p: any) {
     setAdding(p.id)
-    addItem({
-      id: String(p.id),
-      name: p.name,
-      price: p.price,
-      icon: p.icon ?? '📦',
-    })
+    await addItem(p.id)
     setTimeout(() => setAdding(null), 1000)
   }
 
@@ -37,7 +32,6 @@ export default function ProductsClient({ products }: { products: any[] }) {
         <a href="/" style={{ color: '#cc0000', textDecoration: 'none' }}>Home</a> › Products
       </div>
 
-      {/* TOOLBAR */}
       <div style={{ background: 'white', border: '1px solid #ddd', borderRadius: '6px', padding: '14px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px', marginBottom: '20px' }}>
         <input
           type="text"
@@ -72,7 +66,6 @@ export default function ProductsClient({ products }: { products: any[] }) {
         Showing <strong style={{ color: '#222' }}>{filtered.length}</strong> products
       </div>
 
-      {/* GRID */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '16px' }}>
         {filtered.map(p => (
           <div key={p.id} style={{ background: 'white', border: '1px solid #ddd', borderRadius: '6px', padding: '16px', display: 'flex', flexDirection: 'column', gap: '8px', position: 'relative' }}>
@@ -90,9 +83,9 @@ export default function ProductsClient({ products }: { products: any[] }) {
               {p.stock === 0 ? '❌ Out of Stock' : p.stock <= 5 ? `⚠️ Only ${p.stock} left!` : '✅ In Stock'}
             </div>
             {p.wasPrice && (
-              <div style={{ fontSize: '12px', color: '#888', textDecoration: 'line-through' }}>£{p.wasPrice.toFixed(2)}</div>
+              <div style={{ fontSize: '12px', color: '#888', textDecoration: 'line-through' }}>£{Number(p.wasPrice).toFixed(2)}</div>
             )}
-            <div style={{ fontSize: '22px', fontWeight: '900', color: '#cc0000' }}>£{p.price.toFixed(2)}</div>
+            <div style={{ fontSize: '22px', fontWeight: '900', color: '#cc0000' }}>£{Number(p.price).toFixed(2)}</div>
             <div style={{ fontSize: '11px', color: '#888' }}>Inc. VAT</div>
             <button
               onClick={() => handleAddToBasket(p)}
