@@ -34,11 +34,17 @@ export const authOptions = {
   pages: { signIn: '/login' },
   callbacks: {
     async jwt({ token, user }: any) {
-      if (user) token.id = user.id
+      if (user) {
+        token.id = user.id
+        token.email = user.email
+      }
       return token
     },
     async session({ session, token }: any) {
-      if (session.user) session.user.email = token.email
+      if (session.user) {
+        session.user.email = token.email
+        session.user.id = token.id
+      }
       return session
     }
   }
