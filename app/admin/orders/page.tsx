@@ -21,14 +21,18 @@ export default async function AdminOrdersPage() {
 
   return (
     <div style={{ padding: '28px' }}>
-      <h1 style={{ fontSize: '22px', fontWeight: '900', marginBottom: '24px' }}>🛒 Orders ({orders.length})</h1>
+      <h1 style={{ fontSize: '22px', fontWeight: '900', marginBottom: '24px' }}>
+        🛒 Orders ({orders.length})
+      </h1>
 
       <div style={{ background: 'white', border: '1px solid #ddd', borderRadius: '8px', overflow: 'hidden' }}>
         <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px' }}>
           <thead style={{ background: '#f9f9f9' }}>
             <tr>
-              {['Order #', 'Customer', 'Items', 'Total', 'Status', 'Date'].map(h => (
-                <th key={h} style={{ padding: '12px 16px', textAlign: 'left', fontSize: '11px', color: '#888', textTransform: 'uppercase', borderBottom: '1px solid #eee' }}>{h}</th>
+              {['Order #', 'Customer', 'Email', 'Items', 'Total', 'Status', 'Date', 'Actions'].map(h => (
+                <th key={h} style={{ padding: '12px 16px', textAlign: 'left', fontSize: '11px', color: '#888', textTransform: 'uppercase', borderBottom: '1px solid #eee' }}>
+                  {h}
+                </th>
               ))}
             </tr>
           </thead>
@@ -38,13 +42,19 @@ export default async function AdminOrdersPage() {
               return (
                 <tr key={order.id} style={{ borderBottom: '1px solid #f0f0f0' }}>
                   <td style={{ padding: '13px 16px', fontWeight: 'bold' }}>
-                    #TF-{String(order.id).padStart(6, '0')}
+                    <a href={`/admin/orders/${order.id}`} style={{ color: '#cc0000', textDecoration: 'none' }}>
+                      #TF-{String(order.id).padStart(6, '0')}
+                    </a>
                   </td>
                   <td style={{ padding: '13px 16px' }}>
                     <div style={{ fontWeight: 'bold' }}>{order.firstName} {order.lastName}</div>
-                    <div style={{ fontSize: '11px', color: '#aaa' }}>{order.user?.email}</div>
                   </td>
-                  <td style={{ padding: '13px 16px' }}>{order.items.length} items</td>
+                  <td style={{ padding: '13px 16px', color: '#555' }}>
+                    {order.user?.email || 'Guest'}
+                  </td>
+                  <td style={{ padding: '13px 16px' }}>
+                    {order.items.length} items
+                  </td>
                   <td style={{ padding: '13px 16px', fontWeight: 'bold', color: '#cc0000' }}>
                     £{Number(order.total).toFixed(2)}
                   </td>
@@ -56,11 +66,21 @@ export default async function AdminOrdersPage() {
                   <td style={{ padding: '13px 16px', color: '#888' }}>
                     {new Date(order.createdAt).toLocaleDateString('en-GB')}
                   </td>
+                  <td style={{ padding: '13px 16px' }}>
+                    <a href={`/admin/orders/${order.id}`}
+                      style={{ background: '#f0f0f0', padding: '6px 12px', borderRadius: '4px', textDecoration: 'none', color: '#222', fontSize: '12px', fontWeight: 'bold' }}>
+                      👁️ View
+                    </a>
+                  </td>
                 </tr>
               )
             })}
             {orders.length === 0 && (
-              <tr><td colSpan={6} style={{ padding: '40px', textAlign: 'center', color: '#888' }}>No orders yet.</td></tr>
+              <tr>
+                <td colSpan={8} style={{ padding: '40px', textAlign: 'center', color: '#888' }}>
+                  No orders yet.
+                </td>
+              </tr>
             )}
           </tbody>
         </table>
