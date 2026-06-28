@@ -158,10 +158,16 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
             { status: 'DELIVERED', icon: '✅' },
             { status: 'CANCELLED', icon: '❌' },
           ].map(({ status, icon }) => (
-            
-              key={status}
-              href={`/api/admin/orders/${order.id}/status?status=${status}`}
-              style={{
+  <a
+    key={status}
+    href={`/api/admin/orders/${order.id}/status?status=${status}`}
+    style={{
+      ...
+    }}
+  >
+    {icon} {status}
+  </a>
+))
                 padding: '10px 20px',
                 borderRadius: '4px',
                 fontWeight: 'bold',
